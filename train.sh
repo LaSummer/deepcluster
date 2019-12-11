@@ -14,7 +14,7 @@ module purge
 source activate ssl-framework
 
 DIR="/scratch/zl2521/cv/fair-sslime/data/dc_unsupervised_test"
-ARCH="vgg16"
+ARCH="alexnet"
 LR=0.05
 WD=-5
 K=10

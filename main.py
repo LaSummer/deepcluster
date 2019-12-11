@@ -120,6 +120,7 @@ def main(args):
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.26034098, 0.25657727, 0.27126738])
     tra = [transforms.Resize(256),
+           transforms.CenterCrop(224),
            transforms.ToTensor(),
            normalize]
 
@@ -144,7 +145,7 @@ def main(args):
         # remove head
         model.top_layer = None
         model.classifier = nn.Sequential(*list(model.classifier.children())[:-1])
-        print("LENGTH OF DATASET "+len(dataset))
+        print("LENGTH OF DATASET "+str(len(dataset)))
         # get the features for the whole dataset
         features = compute_features(dataloader, model, len(dataset))
 
@@ -266,7 +267,7 @@ def train(loader, model, crit, opt, epoch):
         loss = crit(output, target_var)
 
         # record loss
-        losses.update(loss.data[0], input_tensor.size(0))
+        losses.update(loss.data.item(), input_tensor.size(0))
 
         # compute gradient and do SGD step
         opt.zero_grad()

@@ -75,6 +75,7 @@ def make_layers(input_dim, batch_norm):
     layers = []
     in_channels = input_dim
     cfg = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
+    #cfg = [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M']
     for v in cfg:
         if v == 'M':
             layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
@@ -88,7 +89,7 @@ def make_layers(input_dim, batch_norm):
     return nn.Sequential(*layers)
 
 
-def vgg16(sobel=False, bn=True, out=1000):
+def vgg16(sobel=False, bn=True, out=10):
     dim = 2 + int(not sobel)
     model = VGG(make_layers(dim, bn), out, sobel)
     return model

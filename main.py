@@ -76,7 +76,7 @@ def main(args):
     model = models.__dict__[args.arch](sobel=args.sobel)
     fd = int(model.top_layer.weight.size()[1])
     model.top_layer = None
-    model.features = torch.nn.DataParallel(model.features)
+    #model.features = torch.nn.DataParallel(model.features)
     model.cuda()
     cudnn.benchmark = True
 
@@ -118,9 +118,8 @@ def main(args):
 
     # preprocessing of data
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
+                                     std=[0.26034098, 0.25657727, 0.27126738])
     tra = [transforms.Resize(256),
-           transforms.CenterCrop(224),
            transforms.ToTensor(),
            normalize]
 
@@ -145,7 +144,7 @@ def main(args):
         # remove head
         model.top_layer = None
         model.classifier = nn.Sequential(*list(model.classifier.children())[:-1])
-
+        print("LENGTH OF DATASET "+len(dataset))
         # get the features for the whole dataset
         features = compute_features(dataloader, model, len(dataset))
 
@@ -297,28 +296,29 @@ def compute_features(dataloader, model, N):
     end = time.time()
     model.eval()
     # discard the label information in the dataloader
-    for i, (input_tensor, _) in enumerate(dataloader):
-        input_var = torch.autograd.Variable(input_tensor.cuda(), volatile=True)
-        aux = model(input_var).data.cpu().numpy()
+    with torch.no_grad():
+        for i, (input_tensor, _)  in enumerate(dataloader):
+            input_var = torch.autograd.Variable(input_tensor.cuda())
+        #input_var = torch.cat(input_tensor).cuda()
+            aux = model(input_var).data.cpu().numpy()
 
-        if i == 0:
-            features = np.zeros((N, aux.shape[1]), dtype='float32')
-
-        aux = aux.astype('float32')
-        if i < len(dataloader) - 1:
-            features[i * args.batch: (i + 1) * args.batch] = aux
-        else:
+            if i == 0:
+                features = np.zeros((N, aux.shape[1]), dtype='float32')
+            aux = aux.astype('float32')
+            if i < len(dataloader) - 1:
+                features[i * args.batch: (i + 1) * args.batch] = aux
+            else:
             # special treatment for final batch
-            features[i * args.batch:] = aux
+                features[i * args.batch:] = aux
 
-        # measure elapsed time
-        batch_time.update(time.time() - end)
-        end = time.time()
+        # measure elapsedf time
+            batch_time.update(time.time() - end)
+            end = time.time()
 
-        if args.verbose and (i % 200) == 0:
-            print('{0} / {1}\t'
-                  'Time: {batch_time.val:.3f} ({batch_time.avg:.3f})'
-                  .format(i, len(dataloader), batch_time=batch_time))
+            if args.verbose and (i % 200) == 0:
+                print('{0} / {1}\t'
+                      'Time: {batch_time.val:.3f} ({batch_time.avg:.3f})'
+                      .format(i, len(dataloader), batch_time=batch_time))
     return features
 
 

@@ -299,7 +299,7 @@ def compute_features(dataloader, model, N):
     with torch.no_grad():
         for i, (input_tensor, _)  in enumerate(dataloader):
             input_var = torch.autograd.Variable(input_tensor.cuda())
-        #input_var = torch.cat(input_tensor).cuda()
+            #input_var = torch.cat(input_tensor).cuda()
             aux = model(input_var).data.cpu().numpy()
 
             if i == 0:
@@ -308,10 +308,10 @@ def compute_features(dataloader, model, N):
             if i < len(dataloader) - 1:
                 features[i * args.batch: (i + 1) * args.batch] = aux
             else:
-            # special treatment for final batch
+                # special treatment for final batch
                 features[i * args.batch:] = aux
 
-        # measure elapsedf time
+            # measure elapsedf time
             batch_time.update(time.time() - end)
             end = time.time()
 
